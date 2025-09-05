@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Puzzle Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 5px;
+            background-color: #ccc;
+            padding: 5px;
+            border: 2px solid #333;
+        }
+        .tile {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #007bff;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .empty {
+            background-color: transparent;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sliding Puzzle Game</h1>
+    <div class="puzzle-container" id="puzzle"></div>
+    <p><strong>Goal:</strong> Arrange the tiles in numerical order (1-8).</p>
+
+    <script>
+        // Initialize the puzzle grid
+        const puzzleContainer = document.getElementById('puzzle');
+        const size = 3; // 3x3 grid
+        let tiles = [];
+
+        // Generate the tiles and shuffle them
+        function initPuzzle() {
+            tiles = [...Array(size * size - 1).keys()].map(x => x + 1);
+            tiles.push(null); // Add the empty space
+            shuffleArray(tiles);
+            renderPuzzle();
+        }
+
+        // Shuffle the tiles array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Render the puzzle on the page
+        function renderPuzzle() {
+            puzzleContainer.innerHTML = ''; // Clear existing tiles
+            tiles.forEach((tile, index) => {
+                const tileElement = document.createElement('div');
+                tileElement.className = tile ? 'tile' : 'tile empty';
+                tileElement.textContent = tile ? tile : '';
+                tileElement.dataset.index = index;
+                puzzleContainer.appendChild(tileElement);
+            });
+        }
+
+        // Check if the move is valid
+        function isValidMove(index, emptyIndex) {
+            const row = Math.floor(index / size);
+            const col = index % size;
+            const emptyRow = Math.floor(emptyIndex / size);
+            const emptyCol = emptyIndex % size;
+            return (
+                (row === emptyRow && Math.abs(col - emptyCol) === 1) ||
+                (col === emptyCol && Math.abs(row - emptyRow) === 1)
+            );
+        }
+
+        // Swap tiles
+        function swapTiles(index, emptyIndex) {
+            [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        }
+
+        // Check if the puzzle is solved
+        function isSolved() {
+            const winningArray = [...Array(size * size - 1).keys()].map(x => x + 1).concat(null);
+            return JSON.stringify(tiles) === JSON.stringify(winningArray);
+        }
+
+        // Handle tile click
+        puzzleContainer.addEventListener('click', event => {
+            const clickedTile = event.target;
+            const index = parseInt(clickedTile.dataset.index);
+            const emptyIndex = tiles.indexOf(null);
+
+            if (isValidMove(index, emptyIndex)) {
+                swapTiles(index, emptyIndex);
+                renderPuzzle();
+
+                if (isSolved()) {
+                    setTimeout(() => alert('Congratulations! You solved the puzzle!'), 100);
+                }
+            }
+        });
+
+        // Initialize the game
+        initPuzzle();
+    </script>
+</body>
+</html>
